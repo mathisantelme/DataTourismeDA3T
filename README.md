@@ -13,3 +13,11 @@ On attend les fonctionnalités suivantes:
 3. **Sélection et affichage de POI de la ville de la Rochelle** - Il s'agira de récupérer les **POI** (*Point of Interest*) de la Rochelle à partir d'une ontologie existante sur le web, puis, de les proposer à l'affichage;
 4. **Sélection et affichage d'enrichissement sémantique des traces** - L'enrichissement sémantique s'organise en différents niveaux hiérachiques. L'outil devra permettre de sélectionner *un ou plusieurs* niveaux à afficher;
 5. **Export PDF** - L'outil devra proposer un export au format **PDF**;
+
+## Choix techniques
+
+Pour la réalisation de ce projet j'ai décidé d'utiliser une application **Nodejs** qui utilisera les technologies suivantes:
+
+- **Leaflet** - Une bibliothèque légère et open-source qui permet de d'afficher des points, lignes, tracés et polygonnes sur une carte;
+- **MongoDB** - Une base de donnée **NoSQL** rapide et facile à initialiser qui permettera de stocker les données des tracés au format **GeoJSON**;
+- **Pug (anciennement jade)** - Un système de patron qui permet de générer du **HTML** à la demande afin de gérer le front-end de l'application;
