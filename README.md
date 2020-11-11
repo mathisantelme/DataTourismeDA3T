@@ -350,6 +350,7 @@ Désormais on va mettre en place un système de gestion des requêtes qui va per
 Dans un premier lieu on va créer une route qui permet de récupérer toutes les donnés présentes dans la collection dans leur ordre d'enregistrement. Ici on utilisera l'url suivant: http://localhost:3000/jsonData/.
 
 ```js
+// router/index.js
 /* GET json data. 
     retourne tout les documents stockés dans la collection définie dans le modèle Mongoose dans l'ordre ascendent
 */
@@ -421,6 +422,7 @@ Ensuite il ne nous reste plus qu'a retourner nos documents et a afficher les pot
 Maintenant on va définir une route qui permet de récupérer les données liées à l'identifiant d'une trace. Ici on utilisera l'url suivant: http://localhost:3000/trace/ qui prendra un identifiant comme argument.
 
 ```js
+// router/index.js
 /* GET specific trace data. 
     retourne tout les documents correcpondant à une trace spécifiée
 */
@@ -465,3 +467,50 @@ Ensuite on vérifie qu'un identifiant est bel et bien passé dans l'**URL**, pui
 ![resultat_trace_id](./img/resultat_trace_id.png)
 
 > **Note:** On aurai aussi pu utiliser la fonction `select` fournie par notre modèle afin de trier nos documents, cependant, la fonction `find` permet déjà de filtrer les documents. De plus l'utilisation de la fonction `select` se serai basée sur l'ensemble des documents retournés et aurai ensuite effectué la sélection, tandis que `find` retourne uniquement les documents correspondant (bien que dans le cas d'une seul trace cela importe peu).
+
+---
+
+> **3.** Récupération des attributs d'un point
+
+Afin de pouvoir afficher les traces enrichies, il nous faut connaitre les différents niveaux d'enrichissement et leurs valeurs. Pour cela on va utiliser l'**URL** http://localhost:3000/trace_detailLevel/ avec en argument le niveau de détail de la trace. Cela nous permettera de récupérer toutes les propriétés distinctes d'un niveau d'attribut (par example toutes les valeurs des attributs de niveau 1).
+
+```js
+// router/index.js
+/* GET attribute level distinct values 
+    retourne les valeurs distinctes de chaque attribut de détail en fonction du niveau de  détail spécifié (ici 4 niveaux possible, on utilise 5) pour une trace spécifiée
+*/
+router.get('/trace_detailLevel/:id/:level', function(req, res) {
+    // si le niveau de détail fournit est compris dans un tableau allant de 1 à 4, alors créé le nom de la propriété
+    if (req.params.id && [...Array(5).keys()].slice(1).includes(parseInt(req.params.level))) {
+        // on cherche les valeurs distinctes de la propriété créée puis les retourne au format json
+        Json.find({}, { 'properties.id': req.params.id }).distinct('properties.lvl' + req.params.level + '_attribute', function(error, docs) {
+            if (error)
+                console.log(error);
+            res.json(docs);
+        });
+    }
+});
+```
+Pour cela on va utiliser l'argumnt `level` qui va permettre de spécifier le niveau de détail voulu. Pour s'assurer que l'on ne demande pas un niveau de détail incorrect (ici supérieur à 4 ou inférieur à 1), on va créer un tableau contenant toutes les valeurs possibles et s'assurer que la valeur passée en argument y appartient.
+
+```js
+[...Array(5).keys()].slice(1).includes(parseInt(req.params.level))
+```
+
+> **Note:** Les tableaux en informatique sont connu pour commencer à l'indice 0, et celui-ci n'échappe pas à la règle, c'est pourquoi on créé un tableau d'une longeur de 5 (de 0 à 4), puis on récupère les valeurs à partir de l'indice 1 grâce à la fonction `slice(1)` (de 1 à 4);
+
+Ensuite on construit le nom de la propriété grâce à la valeur passée en argument dans l'**URL**:
+
+```js
+'properties.lvl' + req.params.level + '_attribute'
+```
+
+Et finalement on utilise la fonction `distinct` de notre modèle **Mongoose** qui nous permet de sélectionner les valeurs distinctes d'une propriété parmis les documents appartenant à une trace spécifiée (de la même manière que la route précédente, on vérifie qu'un identifiant est fourni).
+
+En utilisant l'addresse http://localhost:3000/trace_detailLevel/82373126/3 on obtient le résultat suivant:
+
+![trace_level_detail](./img/trace_level_detail.png)
+
+> **Note:** Dans notre cas où une seule trace est présente on aurai pu se passer du passage de l'identifiant de trace dans l'**URL**;
+
+---

@@ -66,7 +66,6 @@ router.get('/jsonData', function(req, res) {
 */
 router.get('/trace/:id', function(req, res) {
     if (req.params.id) {
-        console.log(req.params.id);
         // on définit les informations que l'on veut extraire
         Json.find({}, {
             'geometry.coordinates': 1, // les coordonnées GPS (INFO: il faudrat inverser les valeurs lors de leur utilisation)
@@ -86,6 +85,21 @@ router.get('/trace/:id', function(req, res) {
             if (err)
                 console.log(err);
             // on retourne les documents qui ont été fourni par mongoDB (ici tous)
+            res.json(docs);
+        });
+    }
+});
+
+/* GET attribute level distinct values 
+    retourne les valeurs distinctes de chaque attribut de détail en fonction du niveau de  détail spécifié (ici 4 niveaux possible, on utilise 5) pour une trace spécifiée
+*/
+router.get('/trace_detailLevel/:id/:level', function(req, res) {
+    // si le niveau de détail fournit est compris dans un tableau allant de 1 à 4, alors créé le nom de la propriété
+    if (req.params.id && [...Array(5).keys()].slice(1).includes(parseInt(req.params.level))) {
+        // on cherche les valeurs distinctes de la propriété créée puis les retourne au format json
+        Json.find({}, { 'properties.id': req.params.id }).distinct('properties.lvl' + req.params.level + '_attribute', function(error, docs) {
+            if (error)
+                console.log(error);
             res.json(docs);
         });
     }
