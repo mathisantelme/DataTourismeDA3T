@@ -61,6 +61,36 @@ router.get('/jsonData', function(req, res) {
     });
 });
 
+/* GET specific trace data. 
+    retourne tout les documents correcpondant à une trace spécifiée
+*/
+router.get('/trace/:id', function(req, res) {
+    if (req.params.id) {
+        console.log(req.params.id);
+        // on définit les informations que l'on veut extraire
+        Json.find({}, {
+            'geometry.coordinates': 1, // les coordonnées GPS (INFO: il faudrat inverser les valeurs lors de leur utilisation)
+            'properties': {
+                'timestamp': 1, // le timestamp de l'enregistrement de la donnée (sert pour le tri de ces dernières)
+                'id': req.params.id, // l'identifiant de la trace
+                'lvl1_attribute': 1, // un des attributs du point
+                'lvl2_attribute': 1, // un des attributs du point
+                'lvl3_attribute': 1, // un des attributs du point
+                'lvl4_attribute': 1 // un des attributs du point
+            }
+        }).sort(
+            // on trie les données par le timestamp afin de les avoir dans l'ordre ascedent
+            { 'properties.timestamp': 'asc' }
+        ).exec((err, docs) => {
+            // si il y a une erreur on l'affiche
+            if (err)
+                console.log(err);
+            // on retourne les documents qui ont été fourni par mongoDB (ici tous)
+            res.json(docs);
+        });
+    }
+});
+
 // Gestion des requêtes - END ==========================
 
 module.exports = router;

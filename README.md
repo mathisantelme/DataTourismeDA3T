@@ -254,7 +254,7 @@ router.get('/', function(req, res) {
 module.exports = router;
 ```
 
-Ce fichier reçoit une requête depuis l'**URL** http://localhost:3000/, puis appelle la fonction `res.render`, qui prend deux arguements en paramètres. Premièrement, `index` qui permet de faire appel au *template* `views/index.pug`, et en second un objet **JSON** avec un nom (`title`) et une valeur (`'Express'`). C'est la valeur qui est affichée dans le navigateur grâce au fichier `views/index.pug`.
+Ce fichier reçoit une requête depuis l'**URL** http://localhost:3000/, puis appelle la fonction `res.render`, qui prend deux arguments en paramètres. Premièrement, `index` qui permet de faire appel au *template* `views/index.pug`, et en second un objet **JSON** avec un nom (`title`) et une valeur (`'Express'`). C'est la valeur qui est affichée dans le navigateur grâce au fichier `views/index.pug`.
 
 ```pug
 extends layout
@@ -351,7 +351,7 @@ Dans un premier lieu on va créer une route qui permet de récupérer toutes les
 
 ```js
 /* GET json data. 
-    retourne tout les docuements stockés dans la collection définie dans le modèle Mongoose dans l'ordre ascendent
+    retourne tout les documents stockés dans la collection définie dans le modèle Mongoose dans l'ordre ascendent
 */
 router.get('/jsonData', function(req, res) {
     // on définit les informations que l'on veut extraire
@@ -410,3 +410,58 @@ Une fois que ces données sont obtenues on peut utiliser la fonction `sort` de n
 Ensuite il ne nous reste plus qu'a retourner nos documents et a afficher les potentielles erreur.
 
 > **Note**: Ici on ne s'attardera pas sur la gestion des erreur car notre modèle accepte tout les types de valeurs, donc il ne risque pas d'y avoir d'erreur de typage. Le fait que les données soient statiques permet aussi d'éviter les potentielles erreur. On se contentera donc de simplement les afficher;
+
+![resultat_dataJson](./img/resultat_dataJson.png)
+
+
+---
+
+> **2.** Récupération des données appartenant à une trace
+
+Maintenant on va définir une route qui permet de récupérer les données liées à l'identifiant d'une trace. Ici on utilisera l'url suivant: http://localhost:3000/trace/ qui prendra un identifiant comme argument.
+
+```js
+/* GET specific trace data. 
+    retourne tout les documents correcpondant à une trace spécifiée
+*/
+router.get('/trace/:id', function(req, res) {
+    if (req.params.id) {
+        console.log(req.params.id);
+        // on définit les informations que l'on veut extraire
+        Json.find({}, {
+            'geometry.coordinates': 1, // les coordonnées GPS (INFO: il faudrat inverser les valeurs lors de leur utilisation)
+            'properties': {
+                'timestamp': 1, // le timestamp de l'enregistrement de la donnée (sert pour le tri de ces dernières)
+                'id': req.params.id, // l'identifiant de la trace
+                'lvl1_attribute': 1, // un des attributs du point
+                'lvl2_attribute': 1, // un des attributs du point
+                'lvl3_attribute': 1, // un des attributs du point
+                'lvl4_attribute': 1 // un des attributs du point
+            }
+        }).sort(
+            // on trie les données par le timestamp afin de les avoir dans l'ordre ascedent
+            { 'properties.timestamp': 'asc' }
+        ).exec((err, docs) => {
+            // si il y a une erreur on l'affiche
+            if (err)
+                console.log(err);
+            // on retourne les documents qui ont été fourni par mongoDB (ici tous)
+            res.json(docs);
+        });
+    }
+});
+```
+
+De la même manière que pour la route précédente, on utiliser le routeur **Express** qui va gérer un **URL** spécifié. Cependant ici, on passe l'identifiant d'une trace en argument: 
+
+```js
+router.get('/trace/:id', function(req, res) {});
+```
+
+Ensuite on vérifie qu'un identifiant est bel et bien passé dans l'**URL**, puis on utilise la fonction `find` qui va nous permettre de définir à nouveau les éléments que l'on souhaite (les même que la première route), ici cependant on va définir la valeur de la propriété `id` afin qu'il puisse filter les données par rapport à cette valeur.
+
+> **Note:** Dans les données des traces enrichies, il semble qu'il n'existe qu'une seule trace, c'est pourquoi les résultats des deux routes sont identiques. Cependant si on ajoutait une nouvelle trace avec un identifiant différents, les résultats le serai eu aussi;
+
+![resultat_trace_id](./img/resultat_trace_id.png)
+
+> **Note:** On aurai aussi pu utiliser la fonction `select` fournie par notre modèle afin de trier nos documents, cependant, la fonction `find` permet déjà de filtrer les documents. De plus l'utilisation de la fonction `select` se serai basée sur l'ensemble des documents retournés et aurai ensuite effectué la sélection, tandis que `find` retourne uniquement les documents correspondant (bien que dans le cas d'une seul trace cela importe peu).
