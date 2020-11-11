@@ -94,6 +94,7 @@ Les données des tracés non-enrichis sont celles qui nécessite un nettoyage et
             }
         },
         {
+<<<<<<< HEAD
             "type": "Feature",
             "geometry": {
                 "type": "Point",
@@ -106,6 +107,9 @@ Les données des tracés non-enrichis sont celles qui nécessite un nettoyage et
                 "trace_id": 2,
                 "timestamp": 1000999
             }
+=======
+            ...
+>>>>>>> b7fa73f400ccfbc1c2169aabbf4a5219216477c0
         }
     ]
 }
