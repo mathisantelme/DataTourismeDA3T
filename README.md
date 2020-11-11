@@ -147,7 +147,7 @@ jq '
 ' ./data/raw/raw_dataset.json > ./data/cleaned/dataset.geojson
 ```
 
-> Note: je n'ai personellement pas réussi a utiliser cette commande sur le fichier fournit du fait de sa taille, le process s'arrête avant (malgré le fait que la commande fonctionne sur des fichiers de plus petite taille). Cependant l'affichage des tracés enrichis s'effectue de la même manière que ceux qui ne le sont pas, j'effectuerai donc la suite du projet en utilisant les tracés enrichis;
+> **Note:** je n'ai personellement pas réussi a utiliser cette commande sur le fichier fournit du fait de sa taille, le process s'arrête avant (malgré le fait que la commande fonctionne sur des fichiers de plus petite taille). Cependant l'affichage des tracés enrichis s'effectue de la même manière que ceux qui ne le sont pas, j'effectuerai donc la suite du projet en utilisant les tracés enrichis;
 
 Une fois ces données nettoyées et transformées, on peut les compacter comme pour les premières puis les importer dans **MongDB** sous la collection `bare_traces`.
 
@@ -163,5 +163,101 @@ use dataTourismDA3T;
 db.bare_traces.findOne();
 ```
 
-> Note: Le fichier étant trop conséquent et la transformation des données impossible le compactage et l'import des données décrit ci-dessus est purement théorique;
+> **Note:** Le fichier étant trop conséquent et la transformation des données impossible le compactage et l'import des données décrit ci-dessus est purement théorique;
 
+## Mise en place de l'application Nodejs
+
+Suite au nettoyage et l'importation des données dans la BDD, il est désormais temps de les utiliser dans notre application. Mais pour cela il nous faut créer notre application **Nodejs**. 
+
+### Génération d'un squelette avec Express
+
+Dans un premier lieu nous allons utiliser le web framework **[express](https://expressjs.com/)**, qu'il faudrat installer grâce à **npm** (`sudo npm install express-generator -g`).
+
+```bash
+express --view=pug app
+```
+
+Cette commande permet de générer une application qui utilisera le moteur de template **pug** et qui sera sobrement nommée `app`. On obtient la hiérarchie de fichiers suivante:
+
+![La hiérachie de l'application](./img/appFileTree.png)
+
+Il s'organise de la façon suivante:
+
+- **app.js** - le centre nerveux de l'application;
+- **bin directory** - fichiers de fonctionnement interne;
+- **package.json** - gestion des dépendances;
+- **public directory** - location des images, scripts et feuilles de style **CSS**;
+- **routes directory** - un *switchboard* qui permet de gérer les différentes requêtes;
+- **views directory** - un endroit ou l'on construit le **HTML** qui sera présenté à l'utilisateur;
+
+### Mise à jour des dépendances de l'application
+
+Une fois le squelette de notre application généré, nous allons mettre à jour les dépendances requise pour notre application en modifiant le fichier `./app/package.json`. Dans notre cas nous avons besoin des paquets `mongodb` et `mongoose`.
+
+```json
+{
+    "name": "app",
+    "version": "0.0.0",
+    "private": true,
+    "scripts": {
+        "start": "node ./bin/www"
+    },
+    "dependencies": {
+        "cookie-parser": "~1.4.4",
+        "debug": "~2.6.9",
+        "express": "~4.16.1",
+        "http-errors": "~1.6.3",
+        "morgan": "~1.9.1",
+        "pug": "2.0.0-beta11",
+        "mongodb": "*",
+        "mongoose": "*"
+    }
+}
+```
+
+Une fois les changements sauvegardés, on peut lancer la commande suivante depuis le dossier de notre application (`cd app/`) qui va permettre d'installer toutes les dépendances requises par notre application;
+
+```bash
+npm install
+```
+
+Une fois cela terminé, on peut lancer notre application avec la commande suivante qui nous donnera le résultat présent sur la prochaine image:
+
+```bash
+DEBUG=app:* npm start
+```
+
+![premier lancement de test](./img/premier_lancement_application_command.png)
+
+Ensuite si l'on va à l'addresse http://localhost:3000/, on verra s'afficher ceci:
+
+![affichage dans le navigateur](./img/premier_lancement_application_browser.png)
+
+### Fonctionnement de l'application
+
+L'application fonctionne actuellement grâce au fichier `routes/index.js` qui permet de "router" les requêtes **HTTP** sur l'**URL** http://localhost:3000/.
+
+```javascript
+// routes/index.js
+var express = require('express');
+var router = express.Router();
+
+/* GET home page. */
+router.get('/', function(req, res) {
+  res.render('index', { title: 'Express' });
+});
+
+module.exports = router;
+```
+
+Ce fichier reçoit une requête depuis l'**URL** http://localhost:3000/, puis appelle la fonction `res.render`, qui prend deux arguements en paramètres. Premièrement, `index` qui permet de faire appel au *template* `views/index.pug`, et en second un objet **JSON** avec un nom (`title`) et une valeur (`'Express'`). C'est la valeur qui est affichée dans le navigateur grâce au fichier `views/index.pug`.
+
+```pug
+extends layout
+
+block content
+  h1= title
+  p Welcome to #{title}
+```
+
+Dans un premier lieu on importe le contenu du fichier `views/layout.pug`, une fonctionnalité qui permet d'obtenir une structure de *template* consistante pour toute notre application. La ligne suivante permet de donner des instructions au moteur de *template* sur la localisation des éléments définis dans `views/layout.pug`. Ensuite la variable `title` définie dans le fichier `views/index.pug` est assignée à une balise `<h1>` et est aussi utilisé juste en dessous dans une balise `<p>`. Ce fichier permet donc de définir le contenu qui est affiché dans notre navigateur.
