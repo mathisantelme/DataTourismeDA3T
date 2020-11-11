@@ -169,7 +169,11 @@ db.bare_traces.findOne();
 
 Suite au nettoyage et l'importation des données dans la BDD, il est désormais temps de les utiliser dans notre application. Mais pour cela il nous faut créer notre application **Nodejs**. 
 
-### Génération d'un squelette avec Express
+### Initialisation
+
+Dans cette section, je vais décrire le processus de génération du squelette de l'application, la mise à jour des dépendances, le premier lancement de l'application ainsi que les explications du fonctionnement de cette dernière.
+
+#### **Génération d'un squelette avec Express**
 
 Dans un premier lieu nous allons utiliser le web framework **[express](https://expressjs.com/)**, qu'il faudrat installer grâce à **npm** (`sudo npm install express-generator -g`).
 
@@ -190,7 +194,7 @@ Il s'organise de la façon suivante:
 - **routes directory** - un *switchboard* qui permet de gérer les différentes requêtes;
 - **views directory** - un endroit ou l'on construit le **HTML** qui sera présenté à l'utilisateur;
 
-### Mise à jour des dépendances de l'application
+#### **Mise à jour des dépendances de l'application + Premier lancement**
 
 Une fois le squelette de notre application généré, nous allons mettre à jour les dépendances requise pour notre application en modifiant le fichier `./app/package.json`. Dans notre cas nous avons besoin des paquets `mongodb` et `mongoose`.
 
@@ -233,7 +237,7 @@ Ensuite si l'on va à l'addresse http://localhost:3000/, on verra s'afficher cec
 
 ![affichage dans le navigateur](./img/premier_lancement_application_browser.png)
 
-### Fonctionnement de l'application
+#### **Fonctionnement de l'application**
 
 L'application fonctionne actuellement grâce au fichier `routes/index.js` qui permet de "router" les requêtes **HTTP** sur l'**URL** http://localhost:3000/.
 
@@ -261,3 +265,76 @@ block content
 ```
 
 Dans un premier lieu on importe le contenu du fichier `views/layout.pug`, une fonctionnalité qui permet d'obtenir une structure de *template* consistante pour toute notre application. La ligne suivante permet de donner des instructions au moteur de *template* sur la localisation des éléments définis dans `views/layout.pug`. Ensuite la variable `title` définie dans le fichier `views/index.pug` est assignée à une balise `<h1>` et est aussi utilisé juste en dessous dans une balise `<p>`. Ce fichier permet donc de définir le contenu qui est affiché dans notre navigateur.
+
+---
+
+### Développement de la solution
+
+Dans cette partie je vais décrire le fonctionnement de l'application d'un point de vue technique en présentant la mise en place de chaque fonctionnalité.
+
+#### **Connection à MongoDB - Mongoose**
+
+Dans un premier temps il nous faut récupérer les données présentes sur **MongoDB**. Pour cela on va utiliser **[Mongoose](https://mongoosejs.com/)**. On va donc éditer le fichier `router/index.js` et y apporter le code suivant:
+
+```javascript
+// router/index.js
+// MongoDB Connection ===================================
+var mongoose = require('mongoose'); // import de mongoose
+
+/* Connection à MongoDB via Mongoose*/
+mongoose.connect('mongodb://localhost/dataTourismDA3T', { useNewUrlParser: true }, function(error) {
+    if (error)
+        console.log(error);
+});
+
+/* Définition du schémas Mongoose 
+    un schéma permet de définir la disposition des documents retournés
+*/
+var Schema = mongoose.Schema;
+var JsonSchema = new Schema({
+    name: String,
+    type: Schema.Types.Mixed
+});
+
+/* Définition du modèle Mongoose 
+    permet de mapper une collection
+    mongoose.model(<nom_du_modele>, <schema>, <collection_utilisée>)
+*/
+var Json = mongoose.model('JString', JsonSchema, 'enriched_traces');
+
+// MongoDB Connection - END ============================
+```
+
+Afin de nous connecter à **MongoDB** via **Mongoose**, il faut d'abord importer ce dernier grâce à la première ligne. Ensuite on se connecte à notre BDD grâce à la fonction `connect(uri(s), [options], [callback])`. `uris` permet de définir l'uri de connection à la BDD, `[options]` de définir les options de connection et `[callback]` de définir des fonctions de callback.
+
+```javascript
+/* Connection à MongoDB via Mongoose*/
+mongoose.connect('mongodb://localhost/dataTourismDA3T', { useNewUrlParser: true }, function(error) {
+    if (error)
+        console.log(error);
+});
+```
+
+Dans notre cas on se connect à notre BDD en local, on utilise le nouveau parser d'URL et on utilise un fonction de callback qui nous affiche une erreur si elle à lieu.
+
+Ensuite on définit un schéma **Mongoose** qui permet de mapper une collection présente dans la BDD et de définir la disposition des documents qui seront retournés. Ici on indique que `type` accepte n'importe quel objet **JSON** en tant que valeur et que le nom du docuement doit être une string (pour le moment aucun nom n'est fournit dans les données).
+
+```js
+var Schema = mongoose.Schema;
+var JsonSchema = new Schema({
+    name: String,
+    type: Schema.Types.Mixed
+});
+```
+
+Et pour finir on définit simplement un modèle qui permet de 'mapper' une collection présente dans la BDD. Ici on mappe la collection `enriched_traces` ajoutée précédement.
+
+```js
+/* Définition du modèle Mongoose 
+    permet de mapper une collection
+    mongoose.model(<nom_du_modele>, <schema>, <collection_utilisée>)
+*/
+var Json = mongoose.model('JString', JsonSchema, 'enriched_traces');
+```
+
+> **Note:** On aurait appliqué la même logique pour les données des traces nues, soit en définissant une collection à part, soit en définissant une collection globale (ex: `traces`). La différenciation des deux sera expliquée dans la partie **Affichage des Tracés**;
