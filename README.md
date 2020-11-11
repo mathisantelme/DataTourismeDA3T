@@ -292,11 +292,12 @@ mongoose.connect('mongodb://localhost/dataTourismDA3T', { useNewUrlParser: true 
 */
 var Schema = mongoose.Schema;
 var JsonSchema = new Schema({
-    name: String,
-    type: Schema.Types.Mixed
+    type: Schema.Types.Mixed,
+    geometry: Schema.Types.Mixed,
+    properties: Schema.Types.Mixed
 });
 
-/* Définition du modèle Mongoose 
+/* Définition du modèle Mongoose
     permet de mapper une collection
     mongoose.model(<nom_du_modele>, <schema>, <collection_utilisée>)
 */
@@ -317,13 +318,14 @@ mongoose.connect('mongodb://localhost/dataTourismDA3T', { useNewUrlParser: true 
 
 Dans notre cas on se connect à notre BDD en local, on utilise le nouveau parser d'URL et on utilise un fonction de callback qui nous affiche une erreur si elle à lieu.
 
-Ensuite on définit un schéma **Mongoose** qui permet de mapper une collection présente dans la BDD et de définir la disposition des documents qui seront retournés. Ici on indique que `type` accepte n'importe quel objet **JSON** en tant que valeur et que le nom du docuement doit être une string (pour le moment aucun nom n'est fournit dans les données).
+Ensuite on définit un schéma **Mongoose** qui permet de mapper une collection présente dans la BDD et de définir la disposition des documents qui seront retournés. Ici on indique que les différentes propriétés de nos documents acceptent n'importe quel objet **JSON** en tant que valeur.
 
 ```js
 var Schema = mongoose.Schema;
 var JsonSchema = new Schema({
-    name: String,
-    type: Schema.Types.Mixed
+    type: Schema.Types.Mixed,
+    geometry: Schema.Types.Mixed,
+    properties: Schema.Types.Mixed
 });
 ```
 
@@ -338,3 +340,73 @@ var Json = mongoose.model('JString', JsonSchema, 'enriched_traces');
 ```
 
 > **Note:** On aurait appliqué la même logique pour les données des traces nues, soit en définissant une collection à part, soit en définissant une collection globale (ex: `traces`). La différenciation des deux sera expliquée dans la partie **Affichage des Tracés**;
+
+#### **Gestion des requêtes**
+
+Désormais on va mettre en place un système de gestion des requêtes qui va permettre de récupérer les données **GeoJSON** depuis **MongoDB**.
+
+> **1.** Récupération de toutes les données
+
+Dans un premier lieu on va créer une route qui permet de récupérer toutes les donnés présentes dans la collection dans leur ordre d'enregistrement. Ici on utilisera l'url suivant: http://localhost:3000/jsonData/.
+
+```js
+/* GET json data. 
+    retourne tout les docuements stockés dans la collection définie dans le modèle Mongoose dans l'ordre ascendent
+*/
+router.get('/jsonData', function(req, res) {
+    // on définit les informations que l'on veut extraire
+    Json.find({}, {
+        'geometry.coordinates': 1, // les coordonnées GPS (INFO: il faudrat inverser les valeurs lors de leur utilisation)
+        'properties': {
+            'timestamp': 1, // le timestamp de l'enregistrement de la donnée (sert pour le tri de ces dernières)
+            'id': 1, // l'identifiant de la trace
+            'lvl1_attribute': 1, // un des attributs du point
+            'lvl2_attribute': 1, // un des attributs du point
+            'lvl3_attribute': 1, // un des attributs du point
+            'lvl4_attribute': 1 // un des attributs du point
+        }
+    }).sort(
+        // on trie les données par le timestamp afin de les avoir dans l'ordre ascedent
+        { 'properties.timestamp': 'asc' }
+    ).exec((err, docs) => {
+        // si il y a une erreur on l'affiche
+        if (err)
+            console.log(err);
+        // on retourne les documents qui ont été fourni par mongoDB (ici tous)
+        res.json(docs);
+    });
+});
+```
+
+Pour cela on utilise le routeur fournit par **Express**, qui nous permet de gérer les requêtes **GET**. Ici dès lors qu'une requête est effectuée sur l'**URL** http://localhost:3000/jsonData/, on appelle une fonction de callback qui permet d'appeller notre modèle **Mongoose**. 
+
+Grâce à la fonction `find` qu'il fournit on va pouvoir définir les informations que l'on souhaite obtenir. Ici on va récupérer les coordonnées (qui ne sont pas dans le bon sens, il faudrat les inverser à l'utilisation), l'identifiant de la trace (qui va permettre de tracer le chemin et de ne pas relier n'importe quel point), la date d'enregistrement (qui va permettre de relier les points dans le bon sens) ainsi que les différents attributs de ce point. Ces attributs vont permettre de qualifier le point enregistré.
+
+```json
+{
+    "_id": "5fab31f399477415c3aaa7f5",
+    "geometry": {
+        "coordinates": [-1.1495961,
+            46.1548706
+        ]
+    },
+    "properties": {
+        "timestamp": 1597917559,
+        "id": 82373126,
+        "lvl1_attribute": "Découverte",
+        "lvl2_attribute": "Déplacement avec objectif",
+        "lvl3_attribute": "Adaption",
+        "lvl4_attribute": "Raison : Refus à l'aquarium"
+    }
+}
+```
+
+Le document retourné ci-dessus nous permet de savoir que lors de l'enregistrement de ce point, les usagers étaient en *découverte*, ils se déplacaient avec un *objectif* pour *s'adapter* à leur refus de l'aquarium qui était la *raison* de leur déplacement.
+
+> **Extrait de l'entretien qui a permis l'enrichissement des données:** *"En fait, on n’avait pas prévu ! Enfin, si uniquement l’Aquarium, c’est pour ça qu’on est venus à La Rochelle. [...] En arrivant, mon épouse a vu qu’avec le Covid il y avait des restrictions et qu’il fallait réserver un créneau donc on a décidé de prendre celui de 17h30, et comme il fallait combler la journée on s’es trendus directement à l’Office du Tourisme"*
+
+Une fois que ces données sont obtenues on peut utiliser la fonction `sort` de notre modèle afin de trier les données. Ici on va les trier dans l'ordre croissant des `timestamps` afin de pouvoir définir la trajectoire correcte des usagers.
+
+Ensuite il ne nous reste plus qu'a retourner nos documents et a afficher les potentielles erreur.
+
+> **Note**: Ici on ne s'attardera pas sur la gestion des erreur car notre modèle accepte tout les types de valeurs, donc il ne risque pas d'y avoir d'erreur de typage. Le fait que les données soient statiques permet aussi d'éviter les potentielles erreur. On se contentera donc de simplement les afficher;
