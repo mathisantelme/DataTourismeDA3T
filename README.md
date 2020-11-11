@@ -1,10 +1,14 @@
 # WEB 3.0 - Données Touristique DA3T
 
-### ANTELME Mathis
+**ANTELME Mathis**
+
+*https://github.com/mathisantelme/DataTourismeDA3T*
+
+---
 
 ## Objectif du projet
 
-> L'objectif de ce projet est de concevoir un outil de visualisation des traces enrichies sémantiquement dans le but de les éditer.
+> L'objectif de ce projet est de concevoir un outil de visualisation des traces enrichies sémantiquement dans le but de les étudier.
 
 On attend les fonctionnalités suivantes:
 
@@ -650,4 +654,8 @@ Pour ce qui est des fonctionnalités qui n'ont pas étée mises en place, à sav
 
 Pour conclure ce rapport, j'aurai du mieux définir mes objectifs afin d'investir mon temps sur les tâches les plus importantes au lieu de me focaliser sur certaines de mes difficultés et si plus de temps m'avais été accordé j'en aurai profité pour mieux définir les technologies que j'ai utilisés pour mener ce projet.
 
+---
+
 **ANTELME Mathis**
+
+*https://github.com/mathisantelme/DataTourismeDA3T*
