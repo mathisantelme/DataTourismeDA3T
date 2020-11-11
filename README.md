@@ -607,4 +607,33 @@ On a également pris soin d'ajouter une feuille de sytle (`public/stylesheets/st
 
 > **2** Contenu Leaflet
 
+Une fois nos éléments **HTML** et nos feuilles de style **CSS** en place, nous allons mettre en place une carte **Leaflet** centrée sur la Rochelle et afficher le parcours des usagers sans l'enrichir.
+
+```pug
+    //- on définit un script js
+    script(type='text/javascript').
+        //- Initialisation Carte =====================================
+        var map = L.map('map').setView([#{lat},#{lng}], 14); //- on définit un objet map qui sera centré sur la lat et lng fournie par index.js
+        L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map); //- on ajoute un 'layer' à la carte (le fond de la carte qui contient, entre autres, les POI)
+
+        //- Initialisation & affichage d'un trace non-enrichi
+        var polyline = L.polyline([], {color: 'red'}).addTo(map); //- On initialise le tracé complet et on l'affiche (les données sont initialisées juste après)
+
+        //- on récupère tous les documents correspondant à la trace actuelle (fournie par index.js)
+        $.getJSON('/trace/' + #{trace_id}, function (documents) {
+            //- Pour chaque document récupérer on ajoute les coordonnées GPS dans le tracé
+            for (i = 0; i < documents.length; i++) {
+                polyline.addLatLng(Array(parseFloat(documents[i].geometry.coordinates[1]),parseFloat(documents[i].geometry.coordinates[0])));
+            }
+        });
+```
+
+Dans un premier lieu on définit une carte avec sa position, son niveau de zoom et l'arrière plan (ici on utilise celui de **[OpenStreetMap](https://www.openstreetmap.org/about)** qui fournit les **POI**). Ensuite on défini un tracé nu (pour enfin visualiser nos données autrement qu'en **JSON**), et on l'associe à notre `map` créée précédement. Et enfin on récupère les documents liés à la trace actuelle (dont on connait l'identifiant grâce à `index.js` et l'objet `jmap` vu plus haut), puis on alimente notre tracé des coordonnées stockées dans nos documents.
+
+On obtient alors le résultat suivant:
+
+![web_bare_trace](./img/web_bare_trace.png)
+
 > **3** Fonction addLayer

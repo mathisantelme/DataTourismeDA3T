@@ -10,4 +10,21 @@ block content
             #leg_items
             br
     
-    
+    //- on définit un script js
+    script(type='text/javascript').
+        //- Initialisation Carte =====================================
+        var map = L.map('map').setView([#{lat},#{lng}], 14); //- on définit un objet map qui sera centré sur la lat et lng fournie par index.js
+        L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map); //- on ajoute un 'layer' à la carte (le fond de la carte qui contient, entre autres, les POI)
+
+        //- Initialisation & affichage d'un trace non-enrichi
+        var polyline = L.polyline([], {color: 'red'}).addTo(map); //- On initialise le tracé complet et on l'affiche (les données sont initialisées juste après)
+
+        //- on récupère tous les documents correspondant à la trace actuelle (fournie par index.js)
+        $.getJSON('/trace/' + #{trace_id}, function (documents) {
+            //- Pour chaque document récupérer on ajoute les coordonnées GPS dans le tracé
+            for (i = 0; i < documents.length; i++) {
+                polyline.addLatLng(Array(parseFloat(documents[i].geometry.coordinates[1]),parseFloat(documents[i].geometry.coordinates[0])));
+            }
+        });
