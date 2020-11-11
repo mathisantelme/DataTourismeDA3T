@@ -7,8 +7,9 @@ block content
         each layer, i in jmap
             input(id=layer.lvl)(type='checkbox')
             span#leg_items #{layer.name}
-            #leg_items
             br
+        br
+        button(type="submit")
     
     //- on définit un script js
     script(type='text/javascript').
@@ -19,7 +20,7 @@ block content
         }).addTo(map); //- on ajoute un 'layer' à la carte (le fond de la carte qui contient, entre autres, les POI)
 
         //- Initialisation & affichage d'un trace non-enrichi
-        var polyline = L.polyline([], {color: 'red'}).addTo(map); //- On initialise le tracé complet et on l'affiche (les données sont initialisées juste après)
+        var polyline = L.polyline([], {color: '#9bc63b'}).addTo(map); //- On initialise le tracé complet et on l'affiche (les données sont initialisées juste après)
 
         //- on récupère tous les documents correspondant à la trace actuelle (fournie par index.js)
         $.getJSON('/trace/' + #{trace_id}, function (documents) {

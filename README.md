@@ -636,4 +636,18 @@ On obtient alors le résultat suivant:
 
 ![web_bare_trace](./img/web_bare_trace.png)
 
-> **3** Fonction addLayer
+## Bilan
+
+Au final je n'ai pas pu ammener ce projet jusqu'au bout de ses objectifs du fait d'un manque d'organisation personnelle, de soucis du détail inutile ainsi que des difficultés techniques. 
+
+En effet lors de la mise en place de ce projet j'ai rencontré quelques difficultés techniques, notamment l'affichage des tracés enrichis avec **Leaflet** et le tri et le chargement des tracés nus (possèdant pourtant une configuration convenable, ma machine ne voulais tout simplement pas procéder au traitement complet des données).
+
+Si ce projet était à refaire, je ne pense pas choisir de nouveau **Leaflet** pour gérer la carte. En effet bien que légère et bénéficiant d'une mise en place très simple, il m'as été cependant très difficile de créer des tracés différents à partir de différents tableau de coordonnées (sans que je sache très bien pourquoi). Pour ce qui est du traitement des tracés nu, le choix technique de **jq** m'as posé problème du fait de la taille du tableau contenant les données. En effet avant que **jq** puisse filtrer et transformer les données, il lui faut charger le tableau en mémoire. Malheureusement, le processus s'arretait toujours avant d'avoir chargé le tableau. Pour remédier à cela, une solution aurai été d'utiliser le *stream parser* de **jq**, que je ne connais malheureusement pas et que je n'ai pas pris le temps de comprendre.
+
+Voici pour les difficultés rencontrées, pour ce qui est du reste des choix techniques je reste assez satisfait de ces derniers, en effet une application/serveur **Nodejs** lié avec le moteur **pug** permet de facilement gérer le back et le front-end tout en facilitant leur communication avec **MongoDB** par l'intermédiaire du routeur **Express** et des modèles **Mongoose**.
+
+Pour ce qui est des fonctionnalités qui n'ont pas étée mises en place, à savoir, l'affichage des enrichissement des traces et l'export au format PDF, c'est surtout par manque de temps et d'organisation que je n'ai pas réussi à les implémenter. En effet une meilleure organisation de mon temps et une définition plus claire des objectifs techniques à accomplir m'aurai surement permis de mieux investir mon temps pour faire avancer le projet. Pour l'export au format **PDF**, je pensai utiliser le module *node-html-pdf* fournit par **NPM** qui permet de transformer un document **HTML** en **PDF** et pour l'affichage des tracés enrichis, je pensais définir une fonction de hashage qui aurait permis de générer une coleur en fonction de la valeur des propriétés (`properties.lvl1_attribute`) et de dessiner au fur et à mesure mes lignes entre les points avec la couleur du suivant. Je pensais aussi sélectionner toutes les valeurs distinctes de ces attributs (avec la route `/trace_detailLevel/:id/:level`) puis pour chacune de ces valeurs, les ajouter à la légende en utilisant la couleur leur correspondant pour les identifier.
+
+Pour conclure ce rapport, j'aurai du mieux définir mes objectifs afin d'investir mon temps sur les tâches les plus importantes au lieu de me focaliser sur certaines de mes difficultés et si plus de temps m'avais été accordé j'en aurai profité pour mieux définir les technologies que j'ai utilisés pour mener ce projet.
+
+**ANTELME Mathis**
