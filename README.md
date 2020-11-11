@@ -18,7 +18,7 @@ On attend les fonctionnalités suivantes:
 
 Pour la réalisation de ce projet j'ai décidé d'utiliser une application **Nodejs** qui utilisera les technologies suivantes:
 
-- **[Leaflet](https://leafletjs.com/)** - Une bibliothèque légère et open-source qui permet de d'afficher des points, lignes, tracés et polygonnes sur une carte;
+- **[Leaflet](https://leafletjs.com/)** - Une bibliothèque légère et open-source qui permet de d'afficher des points, lignes, tracés et polygonnes sur une carte (elle affiche aussi les POI par défaut);
 - **[MongoDB](https://www.mongodb.com/fr)** - Une base de donnée **NoSQL** rapide et facile à initialiser qui permettera de stocker les données des tracés au format **[GeoJSON](https://geojson.org/)**;
 - **[Pug](https://pugjs.org/api/getting-started.html)** - Un système de patron qui permet de générer du **HTML** à la demande afin de gérer le front-end de l'application;
 
@@ -515,9 +515,9 @@ En utilisant l'addresse http://localhost:3000/trace_detailLevel/82373126/3 on ob
 
 ---
 
-#### **Mise en place de la carte**
+#### **Route vers la carte - Définition du layout**
 
-Maintenant que nos routes sont mises en place pour obtenir nos données, il nous faut un support sur lequel afficher ces données. Pour cela nous allons mettre en place une nouvelle route afin d'envoyer un objet JSON (nommé `jmap`) ainsi qu'une latitude et une longitude.
+Maintenant que nos routes sont mises en place pour obtenir nos données, il nous faut un support sur lequel afficher ces données. Pour cela nous allons mettre en place une nouvelle route afin d'envoyer un objet JSON contenant la légende qui sera utilisée pour choisir les différents niveaux de détails (nommé `jmap`) ainsi qu'une latitude, une longitude et l'identifiant d'un trace.
 
 ```js
 // routes/index.js
@@ -525,12 +525,27 @@ Maintenant que nos routes sont mises en place pour obtenir nos données, il nous
     permet de passer des données utiles pour notre map
 */
 router.get('/map', function(req, res) {
-    Json.find({}, {}, function(error, docs) {
-        res.render('map', {
-            "jmap": docs,
-            lat: 46.160329, // les coordonnées du centre de la Rochelle
-            lng: -1.151139
-        });
+    res.render('map', {
+        "jmap": [{
+                'name': 'Details niveau 1',
+                'lvl': 1
+            },
+            {
+                'name': 'Details niveau 2',
+                'lvl': 2
+            },
+            {
+                'name': 'Details niveau 3',
+                'lvl': 3
+            },
+            {
+                'name': 'Details niveau 4',
+                'lvl': 4
+            }
+        ],
+        lat: 46.160329, // les coordonnées du centre de la Rochelle
+        lng: -1.151139,
+        trace_id: 82373126
     });
 });
 ```
@@ -562,4 +577,34 @@ html
 
 > **Note:** On pourrai mettre toutes ces références dans un seul et même fichier du fait que l'on a qu'une seule page pour notre application. Cependant le fait d'utiliser le fichier `layout.pug` nous permet d'avoir une disposition consitante à travers toute notre application; 
 
+#### **Mise en place de la carte**
+
 Désormais nous allons mettre en place notre carte. Pour cela nous allons créer un fichier nommé `map.pug` dans le dossier `views` de notre application.
+
+> **1** Contenu HTML
+
+Dans un premier temps on va définir le contenu **HTML** de notre page.
+
+```pug
+//- views/map.pug
+extends layout.pug
+block content
+    #map
+    #leg_title
+        span#leg_items Map Legend
+    #leg
+        each layer, i in jmap
+            input(id=layer.lvl)(type='checkbox' checked)
+            span#leg_items #{layer.name}
+            br
+```
+
+Ici on définit une `div` nommée `#map` qui contient un titre, puis pour chaque niveau de détail présent dans l'objet `jmap` fourni par index.js, on ajoute une description et une checkbox qui nous serviront à sélectionner le niveau de détail souhaité. Pour cela on utilise une boucle `each`.
+
+On a également pris soin d'ajouter une feuille de sytle (`public/stylesheets/style.css`) afin de correctement disposer les éléments sur notre page.
+
+![contenu_html](./img/contenu_html.png)
+
+> **2** Contenu Leaflet
+
+> **3** Fonction addLayer

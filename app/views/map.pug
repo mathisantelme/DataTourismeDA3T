@@ -1,0 +1,13 @@
+extends layout.pug
+block content
+    #map
+    #leg_title
+        span#leg_items Map Legend
+    #leg
+        each layer, i in jmap
+            input(id=layer.lvl)(type='checkbox')
+            span#leg_items #{layer.name}
+            #leg_items
+            br
+    
+    

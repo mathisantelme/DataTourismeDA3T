@@ -110,12 +110,27 @@ router.get('/trace_detailLevel/:id/:level', function(req, res) {
     permet de passer des données utiles pour notre map
 */
 router.get('/map', function(req, res) {
-    Json.find({}, {}, function(error, docs) {
-        res.render('map', {
-            "jmap": docs,
-            lat: 46.160329, // les coordonnées du centre de la Rochelle
-            lng: -1.151139
-        });
+    res.render('map', {
+        "jmap": [{
+                'name': 'Details niveau 1',
+                'lvl': 1
+            },
+            {
+                'name': 'Details niveau 2',
+                'lvl': 2
+            },
+            {
+                'name': 'Details niveau 3',
+                'lvl': 3
+            },
+            {
+                'name': 'Details niveau 4',
+                'lvl': 4
+            }
+        ],
+        lat: 46.160329, // les coordonnées du centre de la Rochelle
+        lng: -1.151139,
+        trace_id: 82373126
     });
 });
 
