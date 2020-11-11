@@ -76,29 +76,25 @@ Les données des tracés non-enrichis sont celles qui nécessite un nettoyage et
 
 ```json
 {
-    "type": "FeatureCollection", // une collection d'objets JSON
-    "name": "traces", // le nom de la collection qui permettera de l'identifier dans la BDD
-    // le tableau des objets Feature représentant les points
+    "type": "FeatureCollection",
+    "name": "traces",
     "features": [
-        // un Point enregistré
         {
             "type": "Feature",
-            // les coordonées GPS
             "geometry": {
                 "type": "Point",
                 "coordinates": [
-                    lat,
-                    lng
+                    50,
+                    100
                 ]
             },
-            // les propriétés du Point
             "properties": {
-                "trace_id": value, // l'identifiant de la trace qui permettera de relier chaque point
-                "timestamp": value // ne doit pas être négatif
+                "trace_id": 1,
+                "timestamp": 100000
             }
         },
         {
-            /* Prochain Point */
+            ...
         }
     ]
 }
