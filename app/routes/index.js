@@ -1,5 +1,6 @@
 var express = require('express');
 var router = express.Router();
+
 /* GET home page. */
 router.get('/', function(req, res, next) {
     res.render('index', { title: 'Express' });
@@ -103,6 +104,19 @@ router.get('/trace_detailLevel/:id/:level', function(req, res) {
             res.json(docs);
         });
     }
+});
+
+/* GET Map page 
+    permet de passer des données utiles pour notre map
+*/
+router.get('/map', function(req, res) {
+    Json.find({}, {}, function(error, docs) {
+        res.render('map', {
+            "jmap": docs,
+            lat: 46.160329, // les coordonnées du centre de la Rochelle
+            lng: -1.151139
+        });
+    });
 });
 
 // Gestion des requêtes - END ==========================

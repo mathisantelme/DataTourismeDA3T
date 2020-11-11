@@ -514,3 +514,52 @@ En utilisant l'addresse http://localhost:3000/trace_detailLevel/82373126/3 on ob
 > **Note:** Dans notre cas où une seule trace est présente on aurai pu se passer du passage de l'identifiant de trace dans l'**URL**;
 
 ---
+
+#### **Mise en place de la carte**
+
+Maintenant que nos routes sont mises en place pour obtenir nos données, il nous faut un support sur lequel afficher ces données. Pour cela nous allons mettre en place une nouvelle route afin d'envoyer un objet JSON (nommé `jmap`) ainsi qu'une latitude et une longitude.
+
+```js
+// routes/index.js
+/* GET Map page 
+    permet de passer des données utiles pour notre map
+*/
+router.get('/map', function(req, res) {
+    Json.find({}, {}, function(error, docs) {
+        res.render('map', {
+            "jmap": docs,
+            lat: 46.160329, // les coordonnées du centre de la Rochelle
+            lng: -1.151139
+        });
+    });
+});
+```
+
+Comme on peut le constater, on fait appel à la fonction `render` avec le paramètre `map`. De la même manière qu'a la génération de notre application (cf: *Fonctionnement de l'application* ci-dessus), on appelle un fichier `map.pug`, qui n'existe pas encore. C'est donc notre prochaine étape.
+
+---
+
+Dans un premier lieu on va modifier le contenu du fichier `/views/layout.pug` afin d'avoir nos références aux scripts **JavaScript** et aux feuilles de style **CSS** accessible depuis n'importe quel fichier pug qui héritera de `layout.pug`.
+
+```pug
+//- /views/layout.pug
+doctype html
+html
+  head
+    title= title
+    //- stylesheets
+    link(rel='stylesheet', href='https://unpkg.com/leaflet@1.2.0/dist/leaflet.css')
+    link(rel='stylesheet', href='https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css')
+    link(rel='stylesheet', href='/stylesheets/style.css') 
+    //- scripts
+    script(src='https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js')
+    script(src='https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js')
+    script(src='https://unpkg.com/leaflet@1.2.0/dist/leaflet.js')
+  body
+    block content
+
+```
+
+> **Note:** On pourrai mettre toutes ces références dans un seul et même fichier du fait que l'on a qu'une seule page pour notre application. Cependant le fait d'utiliser le fichier `layout.pug` nous permet d'avoir une disposition consitante à travers toute notre application; 
+
+Désormais nous allons mettre en place notre carte. Pour cela nous allons créer un fichier nommé `map.pug` dans le dossier `views` de notre application.
